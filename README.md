@@ -1,56 +1,68 @@
-# TTS Studio — 配音工作室
+# TTS Studio &middot; 配音工作室
 
 [English](#english) | [中文](#中文)
+
+> A desktop TTS tool for the Xiaomi MiMo API — research preview.
 
 ---
 
 <h2 id="english">English</h2>
 
-A desktop TTS tool built on the **Xiaomi MiMo TTS API**, designed to make long-form text-to-speech production easier.
+## Overview
 
-> **⚠️ Research stage.** This project is experimental. APIs and features may change without notice.
+TTS Studio is a desktop application that provides a streamlined interface for Xiaomi's MiMo text-to-speech API. It handles long-form text input through automatic segmentation, concurrent generation, and local file output — reducing the friction between raw API calls and usable audio.
 
-**https://github.com/misaka10074poi/tts-studio**
+## Development Approach
 
-## Features
+This project was developed with **AI-assisted engineering**. The full stack — architecture design, UI layout, store management, service layer, Electron packaging, and iterative bug fixing — was built through structured collaboration between human direction and AI agents using the [Matt Pocock skills](https://github.com/mattpocock/skills) methodology (diagnose → triage → tdd → release). The development journal at `docs/dev-handoff.md` records the complete process.
 
-- **9 built-in voices**: Default/Bingtang/Moli/Suda/Baihua/Mia/Chloe/Milo/Dean (Chinese + English)
-- **Voice clone**: upload audio samples or describe custom voices
-- **Smart auto-split**: 500ms debounce, three-pass algorithm (paragraph → merge → punctuation)
-- **Concurrent generation**: 2 workers + AbortController + auto-retry
-- **Local output**: `output/YYYY-MM-DD_taskname/` with segments + merged WAV + metadata
-- **Electron desktop**: standalone exe, `contextIsolation` security model
+## Disclaimer
 
-## Quick Start
+> This project is in a **research and exploratory phase**. It is built on a third-party API (Xiaomi MiMo) and is not affiliated with Xiaomi. APIs, features, and interfaces may change without notice.
+
+## Core Capabilities
+
+| Capability | Detail |
+|-----------|--------|
+| Voice library | 9 preset voices across Chinese and English |
+| Voice customization | Clone from audio samples or describe via text prompts |
+| Automatic segmentation | 500ms debounced real-time splitting; three-pass algorithm (paragraph detection → greedy merge → punctuation split) |
+| Concurrent generation | 2 workers with AbortController-based cancellation and exponential-backoff retry (3 attempts) |
+| Local file output | Structured output directory (`output/YYYY-MM-DD_taskname/`) with per-segment WAV, merged full-output WAV, and metadata JSON |
+| Desktop packaging | Electron 42, `contextIsolation` enabled, no Node.js in renderer |
+
+## Getting Started
 
 ```bash
 npm install
-npm run dev            # Vite dev server (localhost:5173)
-npm run build          # Production build
-npm run electron:build # Package Windows exe
+npm run dev              # Vite dev server (localhost:5173)
+npm run build            # Production build → dist/
+npm run electron:build   # Package standalone Windows executable
 ```
+
+The packaged executable is at `release/配音工作室.exe`.
 
 ## Architecture
 
 ```
-View (React) → Store (Zustand) → Service → API / Filesystem
-                  ↕
-              Electron preload bridge
+┌──────────┐     ┌──────────┐     ┌───────────┐
+│  React   │ ──→ │ Zustand  │ ──→ │ Services  │ ──→ MiMo API
+│  Views   │ ←── │ Stores   │ ←── │           │ ──→ Local FS
+└──────────┘     └──────────┘     └───────────┘
+                       ↕
+              Electron Preload Bridge
+         (openPath / writeFile / ensureDir)
 ```
 
-See `CONTEXT.md` for domain glossary. See `docs/dev-handoff.md` for full development journal.
+For domain terminology and design decisions, see `CONTEXT.md`. For the full development history, see `docs/dev-handoff.md` and `CHANGELOG.md`.
 
-## API Config
+## Configuration
 
-**No API key shipped.** Configure endpoint and key in Settings (gear icon). App reads from localStorage.
+This repository contains **no API credentials**. Configure your MiMo endpoint and key through the Settings dialog within the application. Values persist in browser `localStorage` and are never committed to version control.
 
-## Project Status
+## Tech Stack
 
-> **Research / experimental phase.** Built on Xiaomi MiMo TTS API, under active exploration.
-
-- v4.1.0 — architecture cleanup, 3 bug fixes, 14 QA fixes, Matt Pocock skills setup
-- Tech: React 18 + TypeScript 5 + Vite 5 + MUI 5 + Tailwind 3 + Zustand 4 + Electron 42
-- Issues: [GitHub](https://github.com/misaka10074poi/tts-studio/issues)
+React 18 &middot; TypeScript 5 &middot; Vite 5 &middot; MUI 5 &middot; Tailwind CSS 3 &middot; Zustand 4 &middot; Electron 42 &middot; Node 22
 
 ## License
 
@@ -60,57 +72,61 @@ MIT
 
 <h2 id="中文">中文</h2>
 
-基于 **小米 MiMo TTS API** 打造的桌面端配音工具，让长文本转语音更方便。
+## 项目概述
 
-> **⚠️ 研究探索阶段。** 项目仍处于实验期，API 和功能可能随时调整。
+TTS Studio 是一个桌面端应用，为小米 MiMo 文本转语音 API 提供便捷的操作界面。支持长文本自动分段、并发生成、本地文件输出，让 API 调用直接产出可用音频。
 
-**https://github.com/misaka10074poi/tts-studio**
+## 开发方式
 
-## 功能特性
+本项目采用 **AI 辅助工程** 方式开发。从架构设计、UI 布局、状态管理、服务层、Electron 打包到迭代排错，全部由人类主导方向、AI 代理执行实现，遵循 [Matt Pocock 技能体系](https://github.com/mattpocock/skills)（诊断 → 分类 → 测试驱动 → 发布）。完整开发日志见 `docs/dev-handoff.md`。
 
-- **9 种内置音色**：默认/冰糖/茉莉/苏打/白桦/Mia/Chloe/Milo/Dean，中英文覆盖
-- **声音克隆**：上传音频样本或文字描述定制音色
-- **智能自动拆分**：输入即拆，500ms 防抖，三段式算法（段落→合并→标点拆分）
-- **并发生成**：2 路并发 + AbortController 中止 + 失败自动重试 3 次
-- **本地输出目录**：`output/YYYY-MM-DD_任务名/`，含分段文件 + 合并 WAV + metadata.json
-- **Electron 桌面应用**：独立 exe，`contextIsolation` 安全隔离
+## 声明
+
+> 本项目处于**研究探索阶段**，基于第三方 API（小米 MiMo）构建，与小米公司无关联。API、功能和界面可能随时调整。
+
+## 核心能力
+
+| 能力 | 说明 |
+|------|------|
+| 内置音色 | 9 种预设音色，覆盖中英文男女声 |
+| 声音定制 | 上传音频样本克隆音色，或通过文字描述生成 |
+| 自动分段 | 输入即拆，500ms 防抖，三段式算法（段落识别 → 贪婪合并 → 标点分拆） |
+| 并发生成 | 2 路并发，AbortController 中止控制，指数退避重试（最多 3 次） |
+| 本地输出 | 结构化输出目录 `output/YYYY-MM-DD_任务名/`，含分段 WAV、合并完整音频、元数据 JSON |
+| 桌面打包 | Electron 42，`contextIsolation` 安全隔离，渲染进程无 Node.js 权限 |
 
 ## 快速开始
 
 ```bash
 npm install
-npm run dev            # Vite 开发服务器 (localhost:5173)
-npm run build          # 生产构建
-npm run electron:build # 打包 Windows 桌面应用
+npm run dev              # Vite 开发服务器 (localhost:5173)
+npm run build            # 生产构建 → dist/
+npm run electron:build   # 打包 Windows 独立可执行文件
 ```
 
-双击 `release/配音工作室.exe` 即可运行。
+打包产物位于 `release/配音工作室.exe`，双击运行。
 
 ## 架构
 
 ```
-视图层 (React) → 状态层 (Zustand) → 服务层 → API / 文件系统
-                      ↕
-              Electron preload 桥接层
+┌──────────┐     ┌──────────┐     ┌───────────┐
+│  React   │ ──→ │ Zustand  │ ──→ │ Services  │ ──→ MiMo API
+│  视图层   │ ←── │  状态层  │ ←── │  服务层    │ ──→ 本地文件系统
+└──────────┘     └──────────┘     └───────────┘
+                       ↕
+              Electron Preload 桥接层
+         (openPath / writeFile / ensureDir)
 ```
 
-详见 `CONTEXT.md`（领域术语表）和 `docs/dev-handoff.md`（完整开发日志）。
+领域术语和设计决策见 `CONTEXT.md`。完整开发历史见 `docs/dev-handoff.md` 和 `CHANGELOG.md`。
 
-## API 配置
+## 配置说明
 
-**代码不含 API 密钥。** 从应用内的设置弹窗（齿轮图标）自行配置端点和 Key。数据存储在浏览器 localStorage，**绝不提交到 git**。
+本仓库**不含任何 API 密钥**。通过应用内的设置弹窗（齿轮图标）自行配置 MiMo 端点和 Key。配置数据存储在浏览器 `localStorage`，**绝不提交至版本控制**。
 
-## 项目状态
+## 技术栈
 
-> **研究探索阶段。** 基于小米 MiMo TTS API 构建，仍在积极实验中。
-
-- v4.1.0 — 架构清理、3 个 Bug 修复、14 个 QA 问题修复
-- Issue 追踪：[GitHub Issues](https://github.com/misaka10074poi/tts-studio/issues)
-- 技术栈：React 18 + TypeScript 5 + Vite 5 + MUI 5 + Tailwind CSS 3 + Zustand 4 + Electron 42
-
-## 版本记录
-
-见 [CHANGELOG.md](CHANGELOG.md)。
+React 18 &middot; TypeScript 5 &middot; Vite 5 &middot; MUI 5 &middot; Tailwind CSS 3 &middot; Zustand 4 &middot; Electron 42 &middot; Node 22
 
 ## 许可证
 
