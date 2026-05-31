@@ -9,3 +9,6 @@ output/
 !.env.example
 .DS_Store
 Thumbs.db
+.playwright/
+.playwright-cli/
+cli.config.json
