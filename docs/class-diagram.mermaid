@@ -1,0 +1,106 @@
+classDiagram
+    direction LR
+
+    class ApiConfig {
+        +string endpoint
+        +string apiKey
+        +number maxConcurrency
+        +saveToLocalStorage() void
+        +loadFromLocalStorage() ApiConfig
+    }
+
+    class VoiceProfile {
+        +string id
+        +string name
+        +string nameZh
+        +string description
+        +string category
+        +string voiceParam
+    }
+
+    class TextSegment {
+        +string id
+        +number index
+        +string text
+        +number charCount
+    }
+
+    class TaskItem {
+        +string id
+        +string segmentId
+        +TaskStatus status
+        +string audioBase64
+        +ArrayBuffer audioData
+        +number duration
+        +string errorMessage
+        +number retryCount
+    }
+
+    class TaskQueue {
+        +TaskStatus status
+        +TaskItem[] items
+        +AudioFormat outputFormat
+        +mergeAndDownload() void
+        +retryFailed() void
+        +reset() void
+    }
+
+    class CloneConfig {
+        +CloneMethod method
+        +string audioBase64
+        +string audioFileName
+        +string voiceDescription
+        +ArrayBuffer sampleAudioData
+    }
+
+    class TtsRequest {
+        +TtsModel model
+        +string text
+        +AudioFormat format
+        +string voice
+    }
+
+    class TtsResponse {
+        +boolean success
+        +string audioBase64
+        +string error
+    }
+
+    class AudioFormat {
+        <<enumeration>>
+        MP3
+        WAV
+        PCM16
+    }
+
+    class TaskStatus {
+        <<enumeration>>
+        PENDING
+        GENERATING
+        COMPLETED
+        FAILED
+    }
+
+    class CloneMethod {
+        <<enumeration>>
+        UPLOAD
+        DESCRIBE
+    }
+
+    class TtsModel {
+        <<enumeration>>
+        STANDARD
+        VOICE_CLONE
+        VOICE_DESIGN
+    }
+
+    ApiConfig --> TtsRequest : configures
+    VoiceProfile --> TtsRequest : provides voice param
+    TextSegment --> TaskItem : 1:1 mapping
+    TaskItem --> TaskQueue : belongs to
+    CloneConfig --> TtsRequest : configures clone voice
+    TtsRequest --> TtsResponse : API call returns
+    TaskStatus --> TaskItem : status tracking
+    AudioFormat --> TaskQueue : output format
+    CloneMethod --> CloneConfig : method type
+    TtsModel --> TtsRequest : model selection

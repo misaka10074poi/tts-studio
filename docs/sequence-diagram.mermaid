@@ -1,0 +1,45 @@
+sequenceDiagram
+    actor User
+    participant VP as VoiceCardGrid
+    participant Store as builtinVoiceStore
+    participant Splitter as textSplitter
+    participant Hook as useTtsGeneration
+    participant API as ttsApi
+    participant Audio as audioProcessor
+    participant FS as fileHelper
+
+    User->>VP: 选择音色
+    VP->>Store: setSelectedVoice(voice)
+    User->>Store: 输入文本 setText(text)
+    Store->>Splitter: 拆分预览 splitText(text)
+    Splitter-->>Store: 返回 TextSegment[]
+
+    User->>Hook: 点击"开始生成"
+    Hook->>Store: 初始化 TaskItem[] (status=PENDING)
+    Hook->>Store: 按并发数(2)取出 PENDING 任务
+
+    loop 串行处理每个批次（2路并发）
+        par 并发路1
+            Hook->>API: generateStandard(voice, text, format)
+            API->>API: POST /v1/chat/completions
+            API-->>Hook: TtsApiResponse { audioBase64 }
+            Hook->>Store: updateTask(id, {status:COMPLETED, audioBase64})
+        and 并发路2
+            Hook->>API: generateStandard(voice, text, format)
+            API->>API: POST /v1/chat/completions
+            API-->>Hook: TtsApiResponse { audioBase64 }
+            Hook->>Store: updateTask(id, {status:COMPLETED, audioBase64})
+        end
+        Hook->>Store: 取下一批 PENDING 任务
+    end
+
+    Note over Hook: 所有任务完成
+
+    User->>Hook: 点击"合并下载"
+    Hook->>Audio: mergeAudioBuffers(taskQueue.audioData[])
+    Audio->>Audio: decodeAudioData(每段)
+    Audio->>Audio: concat AudioBuffer (PCM)
+    Audio->>Audio: encodeWAV(mergedBuffer)
+    Audio-->>Hook: WAV Blob
+    Hook->>FS: downloadBlob(blob, filename)
+    FS-->>User: 保存文件
