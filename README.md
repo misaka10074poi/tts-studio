@@ -6,7 +6,9 @@
 
 <h2 id="english">English</h2>
 
-Desktop text-to-speech workstation. Paste scripts → pick a voice → auto-split → generate → export locally.
+A desktop TTS tool built on the **Xiaomi MiMo TTS API**, designed to make long-form text-to-speech production easier.
+
+> **⚠️ Research stage.** This project is experimental. APIs and features may change without notice.
 
 **https://github.com/misaka10074poi/tts-studio**
 
@@ -44,9 +46,11 @@ See `CONTEXT.md` for domain glossary. See `docs/dev-handoff.md` for full develop
 
 ## Project Status
 
+> **Research / experimental phase.** Built on Xiaomi MiMo TTS API, under active exploration.
+
 - v4.1.0 — architecture cleanup, 3 bug fixes, 14 QA fixes, Matt Pocock skills setup
-- Active development. Issues tracked on [GitHub](https://github.com/misaka10074poi/tts-studio/issues).
 - Tech: React 18 + TypeScript 5 + Vite 5 + MUI 5 + Tailwind 3 + Zustand 4 + Electron 42
+- Issues: [GitHub](https://github.com/misaka10074poi/tts-studio/issues)
 
 ## License
 
@@ -56,7 +60,9 @@ MIT
 
 <h2 id="中文">中文</h2>
 
-桌面端长文本语音配音工作站。粘贴脚本 → 选音色 → 自动拆段 → 并发生成 → 本地输出。
+基于 **小米 MiMo TTS API** 打造的桌面端配音工具，让长文本转语音更方便。
+
+> **⚠️ 研究探索阶段。** 项目仍处于实验期，API 和功能可能随时调整。
 
 **https://github.com/misaka10074poi/tts-studio**
 
@@ -96,8 +102,10 @@ npm run electron:build # 打包 Windows 桌面应用
 
 ## 项目状态
 
-- v4.1.0 — 架构清理、3 个 Bug 修复、14 个 QA 问题修复、Matt Pocock 技能体系搭建
-- 活跃开发中。Issue 追踪：[GitHub Issues](https://github.com/misaka10074poi/tts-studio/issues)
+> **研究探索阶段。** 基于小米 MiMo TTS API 构建，仍在积极实验中。
+
+- v4.1.0 — 架构清理、3 个 Bug 修复、14 个 QA 问题修复
+- Issue 追踪：[GitHub Issues](https://github.com/misaka10074poi/tts-studio/issues)
 - 技术栈：React 18 + TypeScript 5 + Vite 5 + MUI 5 + Tailwind CSS 3 + Zustand 4 + Electron 42
 
 ## 版本记录
