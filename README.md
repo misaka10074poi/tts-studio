@@ -1,73 +1,73 @@
-# TTS Studio
+# TTS Studio — 配音工作室
 
-TTS Studio is a local-first desktop voiceover workstation for long-form text-to-speech production.
-It helps creators paste long scripts, split them into manageable segments, generate audio with a TTS API, retry failed segments, and export MP3 or WAV output.
+桌面端长文本语音配音工作站。粘贴脚本 → 选音色 → 自动拆段 → 并发生成 → 本地输出。
+
+https://github.com/misaka10074poi/tts-studio
 
 ## Features
 
-- Professional three-panel workstation layout for voice selection, text editing, segment review, and generation status.
-- Built-in voice mode and voice-clone configuration mode.
-- Long-text splitting with a single editable segment list.
-- Concurrent generation queue with progress tracking, failed-task retry, and local output folders.
-- MP3 and WAV output support.
-- Electron desktop packaging for Windows.
+- **9 种内置音色**：默认/冰糖/茉莉/苏打/白桦/Mia/Chloe/Milo/Dean，中英文覆盖
+- **声音克隆**：上传音频样本或文字描述定制音色
+- **智能拆分**：500ms 防抖自动拆分，三段式算法（段落→合并→标点拆分）
+- **并发生成**：2 路并发 + AbortController 中止 + 失败重试
+- **本地输出**：`output/YYYY-MM-DD_任务名/`，segments + 合并 WAV + metadata
+- **Electron 桌面**：独立 exe，`contextIsolation` 安全模型
 
-## Tech Stack
-
-- React 18
-- TypeScript
-- Vite
-- MUI
-- Tailwind CSS
-- Zustand
-- Electron
-
-## Getting Started
-
-Install dependencies:
+## Quick Start
 
 ```bash
 npm install
+npm run dev           # Vite 开发服务器 (localhost:5173)
+npm run build         # 生产构建
+npm run electron:build  # 打包 Windows exe
 ```
 
-Run the web development server:
+## Architecture
 
-```bash
-npm run dev
+```
+View (React) → Store (Zustand) → Service → API / Filesystem
+                  ↕
+              Electron preload bridge (openPath / writeFile / ensureDir)
 ```
 
-Run the Electron app in development mode:
-
-```bash
-npm run electron:start
-```
-
-Build the frontend:
-
-```bash
-npm run build
-```
-
-Build the Windows desktop app:
-
-```bash
-npm run electron:build
-```
+See `CONTEXT.md` for domain glossary and design decisions.
+See `docs/dev-handoff.md` for comprehensive development log.
 
 ## API Configuration
 
-This project does not ship with an API key. Configure your own TTS API endpoint and key from the app settings dialog.
+**No API key is shipped.** Configure your endpoint and key from the Settings dialog (gear icon in toolbar).
 
-Do not commit personal API keys, generated audio, or private output folders.
+**Never commit API keys.** The app reads from localStorage (`tts_studio_api_config`).
 
-## Project Status
+## Project Structure
 
-This repository is an early open-source desktop TTS workstation. Current focus areas include:
+```
+src/
+├── pages/         HomePage, BuiltinVoicePage, CloneVoicePage
+├── components/    builtin(6) + clone(4) + common(4) + layout(4)
+├── store/         apiConfig, builtinVoice, cloneVoice, taskQueue, project
+├── services/      ttsApi, textSplitter, audioProcessor, fileHelper, outputService
+├── hooks/         useTtsGeneration, useDebouncedSplit, useAudioPlayer
+├── types/         All TypeScript types & enums
+└── config/        voices.ts (9 built-in voice profiles)
+electron/          main.cjs + preload.cjs (contextBridge with 6 APIs)
+docs/              PRD, system design, handoff log, agent configs
+```
 
-- Improving desktop packaging reliability.
-- Hardening local file output and history restore flows.
-- Adding automated UI and generation workflow tests.
-- Improving documentation for third-party TTS provider configuration.
+## Development
+
+- `CLAUDE.md` — Agent entry point (Matt Pocock skills)
+- `CONTEXT.md` — Domain glossary
+- `docs/agents/` — Issue tracker, triage labels, domain doc rules
+- `docs/adr/` — Architecture Decision Records
+
+Issues tracked at: https://github.com/misaka10074poi/tts-studio/issues
+
+## Environment
+
+- Node 22.22.2 + TypeScript 5 + Vite 5
+- Electron 42 (Windows)
+- Python 3.13 (auxiliary scripts: merge_mp3, ffmpeg)
 
 ## License
 
