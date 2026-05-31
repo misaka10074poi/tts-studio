@@ -20,7 +20,7 @@ function hasElectronAPI(): boolean {
  */
 export async function getOutputBaseDir(): Promise<string> {
   const { config } = useApiConfigStore.getState();
-  const outputDir = config.outputDir || DEFAULTS.OUTPUT_DIR;
+  const outputDir = config.outputDir?.trim() || DEFAULTS.OUTPUT_DIR;
 
   if (hasElectronAPI()) {
     const appPath = await window.electronAPI!.getAppPath();
@@ -62,13 +62,17 @@ export async function createTaskDir(taskName: string): Promise<string> {
   const taskDir = `${baseDir.replace(/\\/g, '/')}/${taskName}`;
 
   if (hasElectronAPI()) {
-    const result = window.electronAPI!.ensureDir(taskDir);
+    const result = await window.electronAPI!.ensureDir(taskDir);
     if (!result.success) {
       console.error('创建任务目录失败:', result.error);
       throw new Error(`创建目录失败: ${result.error}`);
     }
     // 同时创建 segments 子目录
-    window.electronAPI!.ensureDir(`${taskDir}/segments`);
+    const segResult = await window.electronAPI!.ensureDir(`${taskDir}/segments`);
+    if (!segResult.success) {
+      console.error('创建 segments 子目录失败:', segResult.error);
+      throw new Error(`创建 segments 子目录失败: ${segResult.error}`);
+    }
   }
 
   return taskDir;
@@ -208,10 +212,7 @@ export async function openOutputDir(taskDir?: string): Promise<void> {
     return;
   }
 
-  if (taskDir) {
-    window.electronAPI!.openPath(taskDir);
-  } else {
-    const baseDir = await getOutputBaseDir();
-    window.electronAPI!.openPath(baseDir);
-  }
+  const target = taskDir || await getOutputBaseDir();
+  console.log('[outputService] openOutputDir:', target);
+  window.electronAPI!.openPath(target);
 }

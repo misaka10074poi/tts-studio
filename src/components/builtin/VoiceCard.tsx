@@ -10,6 +10,23 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import { VoiceProfile } from '../../types';
 
+/** 全局当前播放的 Audio，确保同一时间只有一个音色在播放 */
+let globalPlayingAudio: HTMLAudioElement | null = null;
+let globalPlayingSetter: ((v: boolean) => void) | null = null;
+
+/** 停止全局正在播放的音频 */
+function stopGlobalAudio(): void {
+  if (globalPlayingAudio) {
+    globalPlayingAudio.pause();
+    globalPlayingAudio.currentTime = 0;
+    globalPlayingAudio = null;
+  }
+  if (globalPlayingSetter) {
+    globalPlayingSetter(false);
+    globalPlayingSetter = null;
+  }
+}
+
 interface VoiceCardProps {
   voice: VoiceProfile;
   selected: boolean;
@@ -21,22 +38,59 @@ const VoiceCard: React.FC<VoiceCardProps> = ({ voice, selected, onSelect }) => {
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = React.useState(false);
 
+  // 组件卸载时清理 Audio 资源
+  React.useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.onended = null;
+        audioRef.current.onerror = null;
+        audioRef.current = null;
+      }
+      setPlaying(false);
+    };
+  }, []);
+
   const handlePlay = (e: React.MouseEvent): void => {
     e.stopPropagation();
-    if (!audioRef.current) {
-      audioRef.current = new Audio(voice.sampleUrl);
-      audioRef.current.onended = () => setPlaying(false);
-      audioRef.current.onerror = () => setPlaying(false);
-    }
 
     if (playing) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+      // 停止当前
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      stopGlobalAudio();
       setPlaying(false);
-    } else {
-      audioRef.current.play().catch(() => setPlaying(false));
-      setPlaying(true);
+      return;
     }
+
+    // 先停止其他正在播放的音色
+    stopGlobalAudio();
+
+    // 创建新的 Audio 并播放
+    const audio = new Audio(voice.sampleUrl);
+    audioRef.current = audio;
+    globalPlayingAudio = audio;
+    globalPlayingSetter = setPlaying;
+
+    audio.onended = () => {
+      setPlaying(false);
+      globalPlayingAudio = null;
+      globalPlayingSetter = null;
+    };
+    audio.onerror = () => {
+      setPlaying(false);
+      globalPlayingAudio = null;
+      globalPlayingSetter = null;
+    };
+
+    audio.play().catch(() => {
+      setPlaying(false);
+      globalPlayingAudio = null;
+      globalPlayingSetter = null;
+    });
+    setPlaying(true);
   };
 
   return (

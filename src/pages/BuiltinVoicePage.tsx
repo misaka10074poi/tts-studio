@@ -5,7 +5,32 @@
  * 下：生成面板
  */
 
-import WorkstationPage from './WorkstationPage';
+import React from 'react';
+import { Box, Typography, Divider } from '@mui/material';
+import VoiceCardGrid from '../components/builtin/VoiceCardGrid';
+import TextInputPanel from '../components/builtin/TextInputPanel';
+import SegmentPreviewPanel from '../components/builtin/SegmentPreviewPanel';
+import GenerationPanel from '../components/builtin/GenerationPanel';
 
-/** 内置音色工作台页面 */
-export default WorkstationPage;
+const BuiltinVoicePage: React.FC = () => {
+  return (
+    <Box className="max-w-7xl mx-auto">
+      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: '#1a1a2e' }}>
+        🎤 内置音色工作台
+      </Typography>
+
+      <Box className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <VoiceCardGrid />
+        <TextInputPanel />
+      </Box>
+
+      <SegmentPreviewPanel />
+
+      <Divider sx={{ my: 3 }} />
+
+      <GenerationPanel />
+    </Box>
+  );
+};
+
+export default BuiltinVoicePage;

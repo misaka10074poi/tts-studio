@@ -29,7 +29,12 @@ function loadConfig(): ApiConfig {
 
 /** 保存配置到 localStorage */
 function saveConfig(config: ApiConfig): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  } catch {
+    // QuotaExceededError 或存储不可用，静默降级
+    console.warn('无法持久化 API 配置，继续使用内存配置');
+  }
 }
 
 /** Store 状态接口 */

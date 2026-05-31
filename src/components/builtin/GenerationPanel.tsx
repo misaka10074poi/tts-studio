@@ -62,6 +62,9 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
 
   const [lastTaskDir, setLastTaskDir] = React.useState<string | null>(null);
 
+  /** 记录保存失败的段索引 */
+  const failedSaveSegIndices = React.useRef<Set<number>>(new Set());
+
   const completedCount = taskStore.tasks.filter((t) => t.status === TaskStatus.COMPLETED).length;
   const failedCount = taskStore.tasks.filter((t) => t.status === TaskStatus.FAILED).length;
   const generatingCount = taskStore.tasks.filter((t) => t.status === TaskStatus.GENERATING).length;
@@ -209,6 +212,7 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
       onEachComplete: (index, _total, audioBase64) => {
         outputService.saveSegment(params.taskDir, index, audioBase64, params.format).catch((err) => {
           console.error('保存分段失败:', err);
+          failedSaveSegIndices.current.add(index);
         });
       },
       onAllComplete: async (doneCount: number) => {
@@ -220,11 +224,24 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
             params.voiceName,
             params.voiceId
           );
-          setSnackbar({
-            open: true,
-            message: `已生成 ${doneCount}/${params.segs.length} 段，保存至本地`,
-            severity: 'success',
-          });
+          const failedCount = failedSaveSegIndices.current.size;
+          if (failedCount > 0) {
+            const indices = Array.from(failedSaveSegIndices.current)
+              .sort((a, b) => a - b)
+              .slice(0, 5);
+            const suffix = failedCount > 5 ? '...' : '';
+            setSnackbar({
+              open: true,
+              message: `已生成 ${doneCount}/${params.segs.length} 段，但 ${failedCount} 个分段保存失败 (${indices.map((i) => i + 1).join(', ')}${suffix})`,
+              severity: 'warning',
+            });
+          } else {
+            setSnackbar({
+              open: true,
+              message: `已生成 ${doneCount}/${params.segs.length} 段，保存至本地`,
+              severity: 'success',
+            });
+          }
         } catch (err) {
           console.error('保存输出失败:', err);
           setSnackbar({
@@ -474,8 +491,8 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
         </Stack>
       )}
 
-      {/* 操作按钮 */}
-      <Box className="flex items-center gap-3 mb-4 flex-wrap">
+      {/* 操作按钮 — 滚动时固定顶部 */}
+      <Box className="flex items-center gap-3 mb-4 flex-wrap" sx={{ position: 'sticky', top: 0, zIndex: 5, backgroundColor: '#f6f7fb', py: 1 }}>
         {isGenerating ? (
           <Button
             variant="contained"

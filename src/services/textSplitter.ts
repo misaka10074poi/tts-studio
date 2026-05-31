@@ -114,7 +114,7 @@ function splitByDelimiter(
   threshold: number,
   delimiter: string
 ): string[] {
-  const parts = text.split(delimiter);
+  const parts = text.split(delimiter).filter((s) => s.trim());
   const result: string[] = [];
   let current = '';
 

@@ -30,10 +30,10 @@ import PendingIcon from '@mui/icons-material/HourglassEmpty';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '../../store/projectStore';
 import { useBuiltinVoiceStore } from '../../store/builtinVoiceStore';
 import { useTaskQueueStore } from '../../store/taskQueueStore';
-import { useWorkspaceStore } from '../../store/workspaceStore';
 import { TtsProject } from '../../types';
 
 interface ProjectDrawerProps {
@@ -68,10 +68,10 @@ function hasElectron(): boolean {
 }
 
 const ProjectDrawer: React.FC<ProjectDrawerProps> = ({ open, onClose }) => {
+  const navigate = useNavigate();
   const { projects, activeProjectId, setActiveProject, removeProject } = useProjectStore();
   const builtinStore = useBuiltinVoiceStore();
   const taskStore = useTaskQueueStore();
-  const { setMode } = useWorkspaceStore();
 
   // 记录展开的项目 ID 集合
   const [expandedIds, setExpandedIds] = React.useState<Set<string>>(new Set());
@@ -107,7 +107,8 @@ const ProjectDrawer: React.FC<ProjectDrawerProps> = ({ open, onClose }) => {
   /** 切换到某个项目 */
   const handleSwitch = (project: TtsProject): void => {
     setActiveProject(project.id);
-    setMode(project.voiceId === 'clone' || project.voiceId === 'voice-design' ? 'clone' : 'builtin');
+    // 根据项目模式导航到对应路由
+    navigate(project.voiceId === 'clone' || project.voiceId === 'voice-design' ? '/clone' : '/builtin');
 
     // 恢复音色
     const voice = builtinStore.voices.find((v) => v.id === project.voiceId);
@@ -120,6 +121,11 @@ const ProjectDrawer: React.FC<ProjectDrawerProps> = ({ open, onClose }) => {
 
     // 恢复任务队列
     taskStore.setTasks(project.taskItems);
+
+    // 恢复上次输出目录
+    if (project.taskDir) {
+      builtinStore.setLastOutputDir(project.taskDir);
+    }
 
     onClose();
   };

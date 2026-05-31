@@ -5,6 +5,16 @@
 
 import { Mp3Encoder } from '@breezystack/lamejs';
 
+/** 共享 AudioContext 单例，避免多次创建超出浏览器限制 */
+let sharedCtx: AudioContext | null = null;
+
+function getAudioContext(): AudioContext {
+  if (!sharedCtx || sharedCtx.state === 'closed') {
+    sharedCtx = new AudioContext();
+  }
+  return sharedCtx;
+}
+
 /**
  * 将 Base64 编码的音频数据解码为 ArrayBuffer
  * @param base64 - Base64 编码的音频数据
@@ -25,65 +35,13 @@ export function base64ToArrayBuffer(base64: string): ArrayBuffer {
  * @returns 解码后的 AudioBuffer
  */
 export async function decodeAudio(audioData: ArrayBuffer): Promise<AudioBuffer> {
-  const audioContext = new AudioContext();
-  try {
-    const audioBuffer = await audioContext.decodeAudioData(audioData);
-    return audioBuffer;
-  } finally {
-    await audioContext.close();
-  }
-}
-
-/**
- * 合并多个 AudioBuffer 为一个
- * 所有输入的 AudioBuffer 将被重采样为相同的采样率和声道数
- * @param buffers - 要合并的 AudioBuffer 数组
- * @returns 合并后的 AudioBuffer
- */
-export function mergeAudioBuffers(buffers: AudioBuffer[]): AudioBuffer {
-  if (buffers.length === 0) {
-    throw new Error('没有可合并的音频数据');
-  }
-
-  if (buffers.length === 1) {
-    return buffers[0];
-  }
-
-  // 使用第一个 buffer 的参数作为目标格式
-  const sampleRate = buffers[0].sampleRate;
-  const numberOfChannels = buffers[0].numberOfChannels;
-
-  // 计算总长度
-  let totalLength = 0;
-  for (const buffer of buffers) {
-    totalLength += buffer.length;
-  }
-
-  // 创建离线上下文
-  const offlineContext = new OfflineAudioContext(
-    numberOfChannels,
-    totalLength,
-    sampleRate
-  );
-
-  let offset = 0;
-  for (const buffer of buffers) {
-    const source = offlineContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(offlineContext.destination);
-    source.start(offset / sampleRate);
-    offset += buffer.length;
-  }
-
-  // 注意：OfflineAudioContext.startRendering 是同步返回 Promise 的
-  // 但我们需要在 async 上下文中调用
-  throw new Error(
-    '请使用 mergeAudioBuffersAsync 代替此同步方法'
-  );
+  const audioContext = getAudioContext();
+  return await audioContext.decodeAudioData(audioData);
 }
 
 /**
  * 异步合并多个 AudioBuffer
+ * 所有输入的 AudioBuffer 将被重采样为相同的采样率和声道数
  * @param buffers - 要合并的 AudioBuffer 数组
  * @returns 合并后的 AudioBuffer
  */

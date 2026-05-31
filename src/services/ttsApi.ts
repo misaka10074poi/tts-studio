@@ -31,7 +31,10 @@ export async function generate(request: TtsRequest, signal?: AbortSignal): Promi
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(body),
-      signal: signal ?? AbortSignal.timeout(DEFAULTS.REQUEST_TIMEOUT),
+      signal: AbortSignal.any([
+        AbortSignal.timeout(DEFAULTS.REQUEST_TIMEOUT),
+        ...(signal ? [signal] : []),
+      ]),
     });
 
     if (!response.ok) {

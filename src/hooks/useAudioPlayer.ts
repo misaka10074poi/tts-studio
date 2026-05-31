@@ -35,9 +35,35 @@ export function useAudioPlayer(): AudioPlayerReturn {
   const cleanup = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.removeEventListener('loadedmetadata', onLoadedMetadata);
+      audioRef.current.removeEventListener('timeupdate', onTimeUpdate);
+      audioRef.current.removeEventListener('ended', onEnded);
+      audioRef.current.removeEventListener('error', onError);
       URL.revokeObjectURL(audioRef.current.src);
       audioRef.current = null;
     }
+    setIsPlaying(false);
+  }, []);
+
+  /** 事件处理器引用，用于移除 */
+  const onLoadedMetadata = useCallback(() => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
+  }, []);
+
+  const onTimeUpdate = useCallback(() => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  }, []);
+
+  const onEnded = useCallback(() => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+  }, []);
+
+  const onError = useCallback(() => {
     setIsPlaying(false);
   }, []);
 
@@ -77,22 +103,13 @@ export function useAudioPlayer(): AudioPlayerReturn {
       const audio = new Audio(url);
       audioRef.current = audio;
 
-      audio.addEventListener('loadedmetadata', () => {
-        setDuration(audio.duration);
-      });
+      audio.addEventListener('loadedmetadata', onLoadedMetadata);
 
-      audio.addEventListener('timeupdate', () => {
-        setCurrentTime(audio.currentTime);
-      });
+      audio.addEventListener('timeupdate', onTimeUpdate);
 
-      audio.addEventListener('ended', () => {
-        setIsPlaying(false);
-        setCurrentTime(0);
-      });
+      audio.addEventListener('ended', onEnded);
 
-      audio.addEventListener('error', () => {
-        setIsPlaying(false);
-      });
+      audio.addEventListener('error', onError);
 
       audio.play().then(() => {
         setIsPlaying(true);

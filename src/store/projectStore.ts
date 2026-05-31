@@ -13,7 +13,10 @@ const STORAGE_KEY = 'tts_studio_projects';
 function loadProjects(): TtsProject[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as TtsProject[];
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed as TtsProject[];
+    }
   } catch { /* ignore */ }
   return [];
 }

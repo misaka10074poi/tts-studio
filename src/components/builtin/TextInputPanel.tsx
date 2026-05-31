@@ -22,13 +22,12 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { useBuiltinVoiceStore } from '../../store/builtinVoiceStore';
 import { useCloneVoiceStore } from '../../store/cloneVoiceStore';
-import { useWorkspaceStore } from '../../store/workspaceStore';
 import { useDebouncedSplit } from '../../hooks/useDebouncedSplit';
 import { AudioFormat } from '../../types';
 import { DEFAULTS } from '../../utils/constants';
 
 /** 文本输入面板组件 */
-const TextInputPanel: React.FC = () => {
+const TextInputPanel: React.FC<{ mode?: 'builtin' | 'clone' }> = ({ mode = 'builtin' }) => {
   const {
     inputText,
     setInputText,
@@ -44,7 +43,6 @@ const TextInputPanel: React.FC = () => {
     outputFormat: cloneOutputFormat,
     setOutputFormat: setCloneOutputFormat,
   } = useCloneVoiceStore();
-  const { mode } = useWorkspaceStore();
   const outputFormat = mode === 'clone' ? cloneOutputFormat : builtinOutputFormat;
   const setOutputFormat =
     mode === 'clone' ? setCloneOutputFormat : setBuiltinOutputFormat;
@@ -70,7 +68,7 @@ const TextInputPanel: React.FC = () => {
       } else if (name.endsWith('.docx')) {
         const mammoth = await import('mammoth');
         const arrayBuffer = await file.arrayBuffer();
-        const result = await mammoth.extractRawText({ arrayBuffer } as unknown as { arrayBuffer: ArrayBuffer });
+        const result = await mammoth.extractRawText({ arrayBuffer } as Parameters<typeof mammoth.extractRawText>[0]);
         const text = result.value;
         if (text.trim()) {
           setInputText(inputText ? inputText + '\n\n' + text : text);

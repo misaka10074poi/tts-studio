@@ -30,7 +30,9 @@ function createWindow() {
   } else {
     // 生产模式：dist/ 在 electron/ 的上级
     const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
-    console.log('Loading:', indexPath);
+    if (process.env.VITE_DEV) {
+      console.log('Loading:', indexPath);
+    }
     mainWindow.loadFile(indexPath);
   }
 

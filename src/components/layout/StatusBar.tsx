@@ -11,15 +11,12 @@ import ViewListIcon from '@mui/icons-material/ViewList';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import { useBuiltinVoiceStore } from '../../store/builtinVoiceStore';
 import { useApiConfigStore } from '../../store/apiConfigStore';
-import { useWorkspaceStore } from '../../store/workspaceStore';
 import { useCloneVoiceStore } from '../../store/cloneVoiceStore';
 import { CloneMethod } from '../../types';
 
-/** 底部状态栏组件 */
-const StatusBar: React.FC = () => {
+const StatusBar: React.FC<{ mode?: 'builtin' | 'clone' }> = ({ mode = 'builtin' }) => {
   const { selectedVoice, inputText, segments } = useBuiltinVoiceStore();
   const { config } = useApiConfigStore();
-  const { mode } = useWorkspaceStore();
   const { config: cloneConfig } = useCloneVoiceStore();
 
   const modeLabel = mode === 'clone' ? '声音克隆' : '内置音色';
@@ -38,12 +35,7 @@ const StatusBar: React.FC = () => {
   return (
     <Box
       className="flex items-center gap-4 px-4 h-8 flex-shrink-0 overflow-hidden"
-      sx={{
-        backgroundColor: '#ffffff',
-        borderTop: '1px solid #e5e7eb',
-        fontSize: '0.75rem',
-        color: '#6b7280',
-      }}
+      sx={{ backgroundColor: '#ffffff', borderTop: '1px solid #e5e7eb', fontSize: '0.75rem', color: '#6b7280' }}
     >
       <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
         <GraphicEqIcon sx={{ fontSize: 14 }} /> {modeLabel}
