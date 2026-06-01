@@ -52,7 +52,17 @@ function createWindow() {
   });
 }
 
-ipcMain.handle('get-app-path', () => path.dirname(app.getPath('exe')));
+/** 获取用户可见的输出根目录（便携版返回 exe 实际所在目录，而非临时解压目录） */
+function getOutputBaseDir() {
+  // 便携版：electron-builder 设置此环境变量指向原始 exe 位置
+  if (process.env.PORTABLE_EXECUTABLE_FILE) {
+    return path.dirname(process.env.PORTABLE_EXECUTABLE_FILE);
+  }
+  // 开发/非便携模式：exe 路径即真实路径
+  return path.dirname(app.getPath('exe'));
+}
+
+ipcMain.handle('get-app-path', () => getOutputBaseDir());
 
 app.whenReady().then(createWindow);
 
