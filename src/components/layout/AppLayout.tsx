@@ -3,10 +3,10 @@
  * 提供顶栏导航、项目历史和内容区域的整体布局
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
-  AppBar, Toolbar, Typography, IconButton, Box, Tabs, Tab,
+  AppBar, Toolbar, Typography, IconButton, Box, Tabs, Tab, Alert,
 } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import HistoryIcon from '@mui/icons-material/History';
@@ -14,6 +14,40 @@ import MicIcon from '@mui/icons-material/Mic';
 import ApiConfigDialog from './ApiConfigDialog';
 import ProjectDrawer from './ProjectDrawer';
 import StatusBar from './StatusBar';
+import { useApiConfigStore } from '../../store/apiConfigStore';
+
+/** 诊断横幅：显示 Electron 状态、输出路径、API 配置 */
+const DiagBanner: React.FC = () => {
+  const isElectron = typeof window !== 'undefined' && !!(window as any).electronAPI;
+  const { config } = useApiConfigStore();
+  const [appPath, setAppPath] = useState('检测中...');
+
+  useEffect(() => {
+    if (isElectron) {
+      (window as any).electronAPI.getAppPath().then(setAppPath).catch(() => setAppPath('获取失败'));
+    } else {
+      setAppPath('浏览器模式（文件输出不可用）');
+    }
+  }, [isElectron]);
+
+  const hasKey = !!(config.apiKey && config.apiKey.trim());
+  const outputDir = config.outputDir || './output';
+
+  return (
+    <Alert
+      severity={isElectron && hasKey ? 'success' : 'warning'}
+      sx={{ borderRadius: 0, '& .MuiAlert-message': { flex: 1 } }}
+    >
+      <Box sx={{ fontSize: '0.8rem', lineHeight: 1.6 }}>
+        <strong>{isElectron ? '🟢 ELECTRON 模式' : '🔴 浏览器模式'}</strong>
+        {' | '}输出根目录: <code>{appPath}</code>
+        {' | '}子目录: <code>{outputDir}</code>
+        {' | '}API Key: <strong>{hasKey ? '✅ 已配置' : '❌ 未配置（请点右上角⚙️设置）'}</strong>
+        {!isElectron && ' | ⚠️ 文件输出不可用'}
+      </Box>
+    </Alert>
+  );
+};
 
 const AppLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -65,6 +99,7 @@ const AppLayout: React.FC = () => {
         </Box>
       </AppBar>
 
+      <DiagBanner />
       <Box className="flex-1 p-3 md:p-4">
         <Outlet />
       </Box>

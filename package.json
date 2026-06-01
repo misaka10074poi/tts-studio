@@ -43,7 +43,7 @@
     "appId": "com.tts-studio.app",
     "productName": "配音工作室",
     "directories": {
-      "output": "../tts-studio-build"
+      "output": "release"
     },
     "win": {
       "target": "portable",
