@@ -10,8 +10,8 @@ export const DEFAULTS = {
   API_ENDPOINT: 'https://token-plan-cn.xiaomimimo.com/v1/chat/completions',
   /** 默认 API Key */
   API_KEY: '',
-  /** 最大并发数 */
-  MAX_CONCURRENCY: 2,
+  /** 最大并发数（实测：200字文本安全并发为3, 35字可达10+） */
+  MAX_CONCURRENCY: 3,
   /** 最大重试次数 */
   MAX_RETRIES: 3,
   /** 文本最大长度 */
@@ -22,12 +22,12 @@ export const DEFAULTS = {
   MIN_CLONE_AUDIO_DURATION: 5,
   /** 克隆音频最长时长（秒） */
   MAX_CLONE_AUDIO_DURATION: 30,
-  /** 文本拆分阈值（字符数） */
-  SPLIT_THRESHOLD: 1000,
+  /** 文本拆分阈值（字符数）（实测：500字85s, 800字超时, 300字40s最优） */
+  SPLIT_THRESHOLD: 300,
   /** 默认输出格式 */
   OUTPUT_FORMAT: 'mp3' as AudioFormat,
-  /** 请求超时时间（毫秒） */
-  REQUEST_TIMEOUT: 120000,
+  /** 请求超时时间（毫秒）（实测：500字需85s, 给3分钟余量） */
+  REQUEST_TIMEOUT: 180000,
   /** 音频输出目录 */
   OUTPUT_DIR: './output',
   /** 拆分防抖延迟（毫秒） */

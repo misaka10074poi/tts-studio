@@ -23,6 +23,7 @@ function loadConfig(): ApiConfig {
     endpoint: DEFAULTS.API_ENDPOINT,
     apiKey: DEFAULTS.API_KEY,
     maxConcurrency: DEFAULTS.MAX_CONCURRENCY,
+    splitThreshold: DEFAULTS.SPLIT_THRESHOLD,
     outputDir: DEFAULTS.OUTPUT_DIR,
   };
 }
@@ -64,7 +65,8 @@ export const useApiConfigStore = create<ApiConfigState>((set) => ({
         endpoint: DEFAULTS.API_ENDPOINT,
         apiKey: DEFAULTS.API_KEY,
         maxConcurrency: DEFAULTS.MAX_CONCURRENCY,
-        outputDir: DEFAULTS.OUTPUT_DIR,
+        splitThreshold: DEFAULTS.SPLIT_THRESHOLD,
+    outputDir: DEFAULTS.OUTPUT_DIR,
       };
       saveConfig(defaultConfig);
       return { config: defaultConfig };

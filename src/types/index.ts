@@ -125,8 +125,10 @@ export interface ApiConfig {
   endpoint: string;
   /** API Key */
   apiKey: string;
-  /** 最大并发数 */
+  /** 最大并发数（实测参考：100字时8并发OK，300字安全3并发） */
   maxConcurrency: number;
+  /** 单段字数上限（实测参考：300字25s，400字49s，500字143s；推荐300-400） */
+  splitThreshold: number;
   /** 输出目录 */
   outputDir: string;
 }
