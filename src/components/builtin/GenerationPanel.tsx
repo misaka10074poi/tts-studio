@@ -64,6 +64,9 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
 
   /** 记录保存失败的段索引 */
   const failedSaveSegIndices = React.useRef<Set<number>>(new Set());
+  /** 浏览器模式：收集 base64 用于下载 */
+  const downloadQueueRef = React.useRef<Array<{index: number; base64: string; text: string}>>([]);
+  const isElectron = typeof window !== 'undefined' && !!(window as any).electronAPI;
 
   const completedCount = taskStore.tasks.filter((t) => t.status === TaskStatus.COMPLETED).length;
   const failedCount = taskStore.tasks.filter((t) => t.status === TaskStatus.FAILED).length;
@@ -270,6 +273,10 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
       format: params.format,
       onEachComplete: (index, _total, audioBase64) => {
         console.log('[GenerationPanel] onEachComplete: index =', index, 'audioBase64 length =', audioBase64?.length || 0);
+        // 浏览器模式：收集 base64 供后续下载
+        if (!isElectron && audioBase64) {
+          downloadQueueRef.current.push({ index, base64: audioBase64, text: params.segs[index]?.text || `段${index + 1}` });
+        }
         outputService.saveSegment(params.taskDir, index, audioBase64, params.format).then(() => {
           console.log('[GenerationPanel] onEachComplete: segment', index, 'saved OK');
         }).catch((err) => {
@@ -319,6 +326,31 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
             message: `保存输出文件失败: ${errorMsg}`,
             severity: 'error',
           });
+        }
+
+        // 浏览器模式：自动触发下载（纯浏览器 blob 下载，不依赖 Electron）
+        if (!isElectron && downloadQueueRef.current.length > 0) {
+          const queue = downloadQueueRef.current.sort((a, b) => a.index - b.index);
+          downloadQueueRef.current = [];
+          setTimeout(() => {
+            const { downloadBase64, getAudioMimeType } = require('../../services/fileHelper');
+            const mime = getAudioMimeType(params.format);
+            if (queue.length === 1) {
+              downloadBase64(queue[0].base64, `${queue[0].text.substring(0, 20)}.${params.format}`, mime);
+            } else {
+              // 多段：逐个下载
+              queue.forEach(({ index, base64, text }) => {
+                setTimeout(() => {
+                  downloadBase64(base64, `${index + 1}_${text.substring(0, 15)}.${params.format}`, mime);
+                }, (index - queue[0].index) * 200);
+              });
+            }
+            setSnackbar({
+              open: true,
+              message: `已触发 ${queue.length} 个文件下载，请选择保存位置`,
+              severity: 'info',
+            });
+          }, 500);
         }
       },
     });
