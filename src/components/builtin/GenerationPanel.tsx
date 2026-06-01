@@ -467,7 +467,7 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
 
   return (
     <Box>
-      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'text.primary' }}>
+      <Typography variant="subtitle2" sx={(theme) => ({ fontWeight: 700, mb: 1.5, color: theme.palette.text.primary })}>
         生成与下载
       </Typography>
 

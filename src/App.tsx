@@ -13,33 +13,38 @@ import CloneVoicePage from './pages/CloneVoicePage';
 
 const theme = createTheme({
   palette: {
-    primary: { main: '#6366f1', light: '#818cf8', dark: '#4f46e5', contrastText: '#fff' },
-    secondary: { main: '#8b5cf6', light: '#a78bfa', dark: '#7c3aed', contrastText: '#fff' },
-    background: { default: '#f8f9fb', paper: '#ffffff' },
-    text: { primary: '#111827', secondary: '#6b7280' },
-    success: { main: '#22c55e' },
-    error: { main: '#ef4444' },
-    warning: { main: '#f59e0b' },
-    divider: '#e8eaf0',
+    mode: 'light',
+    primary: { main: '#6d28d9', light: '#8b5cf6', dark: '#5b21b6', contrastText: '#fff' },
+    secondary: { main: '#db2777', light: '#ec4899', dark: '#be185d', contrastText: '#fff' },
+    background: { default: '#fafafa', paper: '#ffffff' },
+    text: { primary: '#0f172a', secondary: '#475569' },
+    success: { main: '#16a34a' },
+    error: { main: '#dc2626' },
+    warning: { main: '#ea580c' },
+    divider: '#e2e8f0',
   },
   typography: {
     fontFamily: [
-      '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"',
-      'Roboto', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif',
+      '"Inter"', '-apple-system', 'BlinkMacSystemFont',
+      '"Segoe UI"', 'Roboto', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif',
     ].join(','),
-    h5: { fontWeight: 700 },
-    h6: { fontWeight: 600 },
-    subtitle2: { fontWeight: 600 },
+    h4: { fontWeight: 800, letterSpacing: '-0.03em' },
+    h5: { fontWeight: 700, letterSpacing: '-0.02em' },
+    h6: { fontWeight: 700 },
+    subtitle2: { fontWeight: 700 },
   },
   shape: { borderRadius: 8 },
   components: {
     MuiCard: {
       styleOverrides: {
         root: {
-          border: '1px solid #e8eaf0',
-          borderRadius: 12,
-          boxShadow: 'none',
-          '&:hover': { borderColor: '#d1d5db' },
+          border: '1px solid #e2e8f0',
+          borderRadius: 16,
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -2px rgba(0,0,0,0.05)',
+          '&:hover': {
+            borderColor: '#c4b5fd',
+            boxShadow: '0 10px 25px -5px rgba(109,40,217,0.15), 0 4px 10px -6px rgba(109,40,217,0.08)',
+          },
         },
       },
     },
@@ -47,28 +52,26 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none' as const,
-          fontWeight: 500,
-          borderRadius: 8,
+          fontWeight: 600,
+          borderRadius: 10,
+          letterSpacing: '0.01em',
         },
         contained: {
-          boxShadow: 'none',
-          '&:hover': { boxShadow: '0 1px 3px rgba(99,102,241,0.3)' },
+          boxShadow: '0 2px 8px rgba(109,40,217,0.25)',
+          '&:hover': {
+            boxShadow: '0 6px 20px rgba(109,40,217,0.4)',
+          },
         },
       },
     },
     MuiTextField: {
       styleOverrides: {
-        root: { '& .MuiOutlinedInput-root': { borderRadius: 8 } },
-      },
-    },
-    MuiSlider: {
-      styleOverrides: {
-        thumb: { '&:hover, &.Mui-focusVisible': { boxShadow: '0 0 0 8px rgba(99,102,241,0.12)' } },
+        root: { '& .MuiOutlinedInput-root': { borderRadius: 10 } },
       },
     },
     MuiChip: {
       styleOverrides: {
-        root: { borderRadius: 6 },
+        root: { borderRadius: 8, fontWeight: 600 },
       },
     },
   },

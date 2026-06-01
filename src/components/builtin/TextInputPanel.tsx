@@ -93,7 +93,7 @@ const TextInputPanel: React.FC<{ mode?: 'builtin' | 'clone' }> = ({ mode = 'buil
   return (
     <Box className="flex flex-col gap-3">
       <Box className="flex items-center justify-between">
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+        <Typography variant="subtitle2" sx={(theme) => ({ fontWeight: 700, color: theme.palette.text.primary })}>
           文本输入
         </Typography>
         <Button
@@ -142,9 +142,9 @@ const TextInputPanel: React.FC<{ mode?: 'builtin' | 'clone' }> = ({ mode = 'buil
             {totalChars}字 · 自动拆为 {segmentCount} 段
           </Typography>
           {isSplitExpanded ? (
-            <ExpandLessIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+            <ExpandLessIcon sx={(theme) => ({ fontSize: 18, color: theme.palette.text.secondary })} />
           ) : (
-            <ExpandMoreIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+            <ExpandMoreIcon sx={(theme) => ({ fontSize: 18, color: theme.palette.text.secondary })} />
           )}
         </Box>
 

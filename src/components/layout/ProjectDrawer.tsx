@@ -207,9 +207,9 @@ const ProjectDrawer: React.FC<ProjectDrawerProps> = ({ open, onClose }) => {
                               {project.title}
                             </Typography>
                             {isExpanded ? (
-                              <ExpandLessIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                              <ExpandLessIcon sx={(theme) => ({ fontSize: 18, color: theme.palette.text.secondary })} />
                             ) : (
-                              <ExpandMoreIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                              <ExpandMoreIcon sx={(theme) => ({ fontSize: 18, color: theme.palette.text.secondary })} />
                             )}
                           </Box>
                         }

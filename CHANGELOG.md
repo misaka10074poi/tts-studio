@@ -4,6 +4,17 @@ All notable changes to TTS Studio are documented in this file.
 
 ---
 
+## [v4.2.0] — 2026-06-02
+
+### Changed
+- Components now correctly consume MUI theme tokens via callback syntax, enabling proper theme-level style management
+- Upgraded card/button/input border-radius and shadow hierarchy for better visual separation
+
+### Fixed
+- MUI `sx` prop theme token resolution: string tokens replaced with callback form to ensure consistent styling across components
+
+---
+
 ## [v4.1.0] — 2026-06-01
 
 ### Fixed
