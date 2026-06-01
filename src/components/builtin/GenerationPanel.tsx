@@ -74,25 +74,41 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
   /** 构建并保存完成后的所有输出 */
   const saveAllToDisk = React.useCallback(
     async (segs: { id: string; index: number; text: string; charCount: number }[]): Promise<string | null> => {
+      console.log('[GenerationPanel] ====== saveAllToDisk called ======');
+      console.log('[GenerationPanel] saveAllToDisk: segs count =', segs.length);
+      console.log('[GenerationPanel] saveAllToDisk: isCloneMode =', isCloneMode);
+
       try {
+        // 首先确保输出根目录存在
+        if (typeof window !== 'undefined' && window.electronAPI) {
+          console.log('[GenerationPanel] saveAllToDisk: ensuring output root dir...');
+          const ensureResult = await window.electronAPI.ensureOutputDir();
+          console.log('[GenerationPanel] saveAllToDisk: ensureOutputDir result:', JSON.stringify(ensureResult));
+        }
+
         const taskName = outputService.generateTaskName(builtinStore.inputText);
+        console.log('[GenerationPanel] saveAllToDisk: taskName =', taskName);
+
         const taskDir = await outputService.createTaskDir(taskName);
+        console.log('[GenerationPanel] saveAllToDisk: taskDir =', taskDir);
 
         // 将 taskDir 保存到 store 中
         builtinStore.setLastOutputDir(taskDir);
+        console.log('[GenerationPanel] saveAllToDisk: SUCCESS, returning taskDir');
 
         return taskDir;
       } catch (err) {
-        console.error('创建输出目录失败:', err);
+        console.error('[GenerationPanel] saveAllToDisk: FAILED -', err);
+        const errorMsg = err instanceof Error ? err.message : String(err);
         setSnackbar({
           open: true,
-          message: '创建输出目录失败，请检查磁盘权限',
+          message: `创建输出目录失败: ${errorMsg}`,
           severity: 'error',
         });
         return null;
       }
     },
-    [builtinStore]
+    [builtinStore, isCloneMode]
   );
 
   /** 保存当前生成任务为项目 */
@@ -128,35 +144,63 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
     voiceName: string,
     voiceId: string
   ): Promise<void> => {
+    console.log('[GenerationPanel] ====== saveCompletedOutput called ======');
+    console.log('[GenerationPanel] saveCompletedOutput: taskDir =', taskDir);
+    console.log('[GenerationPanel] saveCompletedOutput: format =', format);
+    console.log('[GenerationPanel] saveCompletedOutput: voiceName =', voiceName);
+
     const currentTasks = useTaskQueueStore.getState().tasks;
     const completed = currentTasks.filter(
       (t) => t.status === TaskStatus.COMPLETED && t.audioBase64
     );
+
+    console.log('[GenerationPanel] saveCompletedOutput: total tasks =', currentTasks.length, 'completed =', completed.length);
 
     if (completed.length > 0) {
       const combinedBase64List = completed
         .filter((t) => t.audioBase64)
         .map((t) => t.audioBase64!);
 
+      console.log('[GenerationPanel] saveCompletedOutput: combinedBase64List length =', combinedBase64List.length);
+      console.log('[GenerationPanel] saveCompletedOutput: first base64 snippet (first 50 chars) =',
+        combinedBase64List[0]?.substring(0, 50) || '(empty)');
+
       if (combinedBase64List.length === 1) {
-        await outputService.saveMergedAudio(
-          taskDir,
-          new Uint8Array(
+        console.log('[GenerationPanel] saveCompletedOutput: single segment, decoding base64 directly...');
+        try {
+          const rawBuffer = new Uint8Array(
             Array.from(atob(combinedBase64List[0]), (c) => c.charCodeAt(0))
-          ).buffer,
-          format
-        );
+          ).buffer;
+          console.log('[GenerationPanel] saveCompletedOutput: decoded buffer size =', rawBuffer.byteLength);
+          await outputService.saveMergedAudio(taskDir, rawBuffer, format);
+          console.log('[GenerationPanel] saveCompletedOutput: single segment saved OK');
+        } catch (err) {
+          console.error('[GenerationPanel] saveCompletedOutput: single segment save FAILED:', err);
+          throw err;
+        }
       } else if (combinedBase64List.length > 1) {
-        const mergedData =
-          format === AudioFormat.MP3
-            ? await mergeAndEncodeMp3(combinedBase64List)
-            : await mergeAndEncodeWav(combinedBase64List);
-        await outputService.saveMergedAudio(taskDir, mergedData, format);
+        console.log('[GenerationPanel] saveCompletedOutput: merging', combinedBase64List.length, 'segments...');
+        try {
+          const mergedData =
+            format === AudioFormat.MP3
+              ? await mergeAndEncodeMp3(combinedBase64List)
+              : await mergeAndEncodeWav(combinedBase64List);
+          console.log('[GenerationPanel] saveCompletedOutput: merged data size =', mergedData.byteLength);
+          await outputService.saveMergedAudio(taskDir, mergedData, format);
+          console.log('[GenerationPanel] saveCompletedOutput: merged audio saved OK');
+        } catch (err) {
+          console.error('[GenerationPanel] saveCompletedOutput: merge/save FAILED:', err);
+          throw err;
+        }
       }
+    } else {
+      console.warn('[GenerationPanel] saveCompletedOutput: NO completed tasks with audio data!');
     }
 
+    console.log('[GenerationPanel] saveCompletedOutput: saving metadata...');
+    const taskName = outputService.generateTaskName(builtinStore.inputText);
     const meta: OutputTaskMeta = {
-      taskId: outputService.generateTaskName(builtinStore.inputText),
+      taskId: taskName,
       createdAt: new Date().toISOString(),
       voiceName,
       voiceId,
@@ -172,14 +216,23 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
         textPreview: s.text.substring(0, 100),
       })),
     };
-    await outputService.saveMetadata(taskDir, meta);
-    await outputService.updateHistoryIndex({
-      taskId: meta.taskId,
-      dirName: taskDir,
-      createdAt: meta.createdAt,
-      voiceName: meta.voiceName,
-      totalSegments: meta.totalSegments,
-    });
+
+    try {
+      await outputService.saveMetadata(taskDir, meta);
+      console.log('[GenerationPanel] saveCompletedOutput: metadata saved OK');
+
+      await outputService.updateHistoryIndex({
+        taskId: meta.taskId,
+        dirName: taskDir,
+        createdAt: meta.createdAt,
+        voiceName: meta.voiceName,
+        totalSegments: meta.totalSegments,
+      });
+      console.log('[GenerationPanel] saveCompletedOutput: history index updated OK');
+    } catch (err) {
+      console.error('[GenerationPanel] saveCompletedOutput: metadata/index save FAILED:', err);
+      throw err;
+    }
 
     const ps = useProjectStore.getState();
     if (ps.activeProjectId) {
@@ -203,6 +256,12 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
       voiceId: string;
     }
   ): void => {
+    console.log('[GenerationPanel] ====== startPendingGeneration ======');
+    console.log('[GenerationPanel] startPendingGeneration: model =', params.model);
+    console.log('[GenerationPanel] startPendingGeneration: taskDir =', params.taskDir);
+    console.log('[GenerationPanel] startPendingGeneration: segs count =', params.segs.length);
+    console.log('[GenerationPanel] startPendingGeneration: format =', params.format);
+
     startGeneration({
       model: params.model,
       segments: params.segs,
@@ -210,12 +269,19 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
       voiceDescription: params.voiceDescription,
       format: params.format,
       onEachComplete: (index, _total, audioBase64) => {
-        outputService.saveSegment(params.taskDir, index, audioBase64, params.format).catch((err) => {
-          console.error('保存分段失败:', err);
+        console.log('[GenerationPanel] onEachComplete: index =', index, 'audioBase64 length =', audioBase64?.length || 0);
+        outputService.saveSegment(params.taskDir, index, audioBase64, params.format).then(() => {
+          console.log('[GenerationPanel] onEachComplete: segment', index, 'saved OK');
+        }).catch((err) => {
+          console.error('[GenerationPanel] onEachComplete: segment', index, 'save FAILED:', err.message || err);
           failedSaveSegIndices.current.add(index);
         });
       },
       onAllComplete: async (doneCount: number) => {
+        console.log('[GenerationPanel] ====== onAllComplete ======');
+        console.log('[GenerationPanel] onAllComplete: doneCount =', doneCount, 'total =', params.segs.length);
+        console.log('[GenerationPanel] onAllComplete: failedSaveSegIndices =', Array.from(failedSaveSegIndices.current));
+
         try {
           await saveCompletedOutput(
             params.taskDir,
@@ -224,15 +290,18 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
             params.voiceName,
             params.voiceId
           );
-          const failedCount = failedSaveSegIndices.current.size;
-          if (failedCount > 0) {
+
+          const failedSaveCount = failedSaveSegIndices.current.size;
+          console.log('[GenerationPanel] onAllComplete: failedSaveCount =', failedSaveCount);
+
+          if (failedSaveCount > 0) {
             const indices = Array.from(failedSaveSegIndices.current)
               .sort((a, b) => a - b)
               .slice(0, 5);
-            const suffix = failedCount > 5 ? '...' : '';
+            const suffix = failedSaveCount > 5 ? '...' : '';
             setSnackbar({
               open: true,
-              message: `已生成 ${doneCount}/${params.segs.length} 段，但 ${failedCount} 个分段保存失败 (${indices.map((i) => i + 1).join(', ')}${suffix})`,
+              message: `已生成 ${doneCount}/${params.segs.length} 段，但 ${failedSaveCount} 个分段保存失败 (${indices.map((i) => i + 1).join(', ')}${suffix})`,
               severity: 'warning',
             });
           } else {
@@ -243,10 +312,11 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
             });
           }
         } catch (err) {
-          console.error('保存输出失败:', err);
+          console.error('[GenerationPanel] onAllComplete: saveCompletedOutput FAILED:', err);
+          const errorMsg = err instanceof Error ? err.message : String(err);
           setSnackbar({
             open: true,
-            message: '保存输出文件失败，请重试',
+            message: `保存输出文件失败: ${errorMsg}`,
             severity: 'error',
           });
         }
@@ -256,6 +326,8 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
 
   /** 执行生成 */
   const handleGenerate = (): void => {
+    console.log('[GenerationPanel] ====== handleGenerate ======');
+    console.log('[GenerationPanel] handleGenerate: isCloneMode =', isCloneMode);
     if (isCloneMode) {
       handleCloneGenerate();
     } else {
@@ -265,16 +337,23 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
 
   /** 内置音色生成 */
   const handleBuiltinGenerate = async (): Promise<void> => {
+    console.log('[GenerationPanel] ====== handleBuiltinGenerate ======');
     const { selectedVoice, inputText, segments, outputFormat } = builtinStore;
 
     if (!selectedVoice) {
+      console.warn('[GenerationPanel] handleBuiltinGenerate: no voice selected');
       setSnackbar({ open: true, message: '请先选择音色', severity: 'error' });
       return;
     }
     if (!inputText.trim()) {
+      console.warn('[GenerationPanel] handleBuiltinGenerate: input text is empty');
       setSnackbar({ open: true, message: '请输入文本', severity: 'error' });
       return;
     }
+
+    console.log('[GenerationPanel] handleBuiltinGenerate: voice =', selectedVoice.nameZh, 'voiceParam =', selectedVoice.voiceParam);
+    console.log('[GenerationPanel] handleBuiltinGenerate: outputFormat =', outputFormat);
+    console.log('[GenerationPanel] handleBuiltinGenerate: inputText length =', inputText.length);
 
     const segs = segments.length > 0 ? segments : splitText(inputText);
     if (segs.length === 0) {
@@ -282,14 +361,21 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
       return;
     }
 
+    console.log('[GenerationPanel] handleBuiltinGenerate: segs count =', segs.length);
+
     if (segments.length === 0) {
       builtinStore.setSegments(segs);
     }
 
     // 创建输出目录
+    console.log('[GenerationPanel] handleBuiltinGenerate: calling saveAllToDisk...');
     const taskDir = await saveAllToDisk(segs);
-    if (!taskDir) return;
+    if (!taskDir) {
+      console.error('[GenerationPanel] handleBuiltinGenerate: saveAllToDisk returned null, aborting');
+      return;
+    }
     setLastTaskDir(taskDir);
+    console.log('[GenerationPanel] handleBuiltinGenerate: taskDir =', taskDir);
 
     // 保存项目
     saveProject(segs, taskDir);
@@ -301,6 +387,7 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
       retryCount: 0,
     }));
     taskStore.setTasks(tasks);
+    console.log('[GenerationPanel] handleBuiltinGenerate: created', tasks.length, 'tasks');
 
     startPendingGeneration({
       model: TtsModel.STANDARD,
@@ -317,6 +404,7 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
 
   /** 克隆模式生成 */
   const handleCloneGenerate = async (): Promise<void> => {
+    console.log('[GenerationPanel] ====== handleCloneGenerate ======');
     const { config, outputFormat } = cloneStore;
     const inputText = builtinStore.inputText;
 
@@ -338,6 +426,8 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
       setSnackbar({ open: true, message: '文本拆分结果为空', severity: 'error' });
       return;
     }
+
+    console.log('[GenerationPanel] handleCloneGenerate: cloneMethod =', config.method, 'segs =', segs.length);
 
     // 创建输出目录
     const taskDir = await saveAllToDisk(segs);
@@ -381,6 +471,7 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
 
   /** 中止生成 */
   const handleAbort = (): void => {
+    console.log('[GenerationPanel] handleAbort called');
     abortGeneration();
     const ps = useProjectStore.getState();
     if (ps.activeProjectId) {
@@ -394,6 +485,7 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
 
   /** 打开输出目录 */
   const handleOpenOutputDir = (): void => {
+    console.log('[GenerationPanel] handleOpenOutputDir: lastTaskDir =', lastTaskDir);
     if (lastTaskDir) {
       outputService.openOutputDir(lastTaskDir);
     }
