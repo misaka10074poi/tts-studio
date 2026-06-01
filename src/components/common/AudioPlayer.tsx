@@ -56,10 +56,10 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         onClick={handleToggle}
         disabled={!audioBase64}
         sx={{
-          backgroundColor: audioBase64 ? '#6366F1' : '#e5e7eb',
+          backgroundColor: audioBase64 ? '#6366F1' : '#e8eaf0',
           color: audioBase64 ? 'white' : '#9ca3af',
           '&:hover': {
-            backgroundColor: audioBase64 ? '#4F46E5' : '#e5e7eb',
+            backgroundColor: audioBase64 ? '#4F46E5' : '#e8eaf0',
           },
         }}
       >

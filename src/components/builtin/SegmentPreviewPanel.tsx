@@ -136,7 +136,7 @@ const SegmentPreviewPanel: React.FC = () => {
     <Box
       className="mb-4"
       sx={{
-        border: '1px solid #e5e7eb',
+        border: '1px solid #e8eaf0',
         borderRadius: 2,
         overflow: 'hidden',
         transition: 'all 0.2s',

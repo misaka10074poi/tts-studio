@@ -15,7 +15,7 @@ import GenerationPanel from '../components/builtin/GenerationPanel';
 const BuiltinVoicePage: React.FC = () => {
   return (
     <Box className="max-w-7xl mx-auto">
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: '#1a1a2e' }}>
+      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: 'text.primary' }}>
         🎤 内置音色工作台
       </Typography>
 

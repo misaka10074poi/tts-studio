@@ -77,7 +77,7 @@ const TaskQueueItem: React.FC<TaskQueueItemProps> = ({
             ? '#bbf7d0'
             : task.status === TaskStatus.FAILED
             ? '#fecaca'
-            : '#e5e7eb',
+            : '#e8eaf0',
       }}
     >
       {/* 状态图标 */}

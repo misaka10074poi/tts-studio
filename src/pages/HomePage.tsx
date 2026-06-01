@@ -18,7 +18,7 @@ const HomePage: React.FC = () => {
       <Typography
         variant="h4"
         className="text-center mb-2"
-        sx={{ fontWeight: 700, color: '#1a1a2e' }}
+        sx={{ fontWeight: 700, color: 'text.primary' }}
       >
         🎙️ 配音工作室
       </Typography>

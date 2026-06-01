@@ -35,7 +35,7 @@ const StatusBar: React.FC<{ mode?: 'builtin' | 'clone' }> = ({ mode = 'builtin' 
   return (
     <Box
       className="flex items-center gap-4 px-4 h-8 flex-shrink-0 overflow-hidden"
-      sx={{ backgroundColor: '#ffffff', borderTop: '1px solid #e5e7eb', fontSize: '0.75rem', color: '#6b7280' }}
+      sx={{ backgroundColor: '#ffffff', borderTop: '1px solid #e8eaf0', fontSize: '0.75rem', color: '#6b7280' }}
     >
       <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
         <GraphicEqIcon sx={{ fontSize: 14 }} /> {modeLabel}

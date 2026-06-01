@@ -17,7 +17,7 @@ const VoiceCardGrid: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: '#111827' }}>
+      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'text.primary' }}>
         选择音色
       </Typography>
 

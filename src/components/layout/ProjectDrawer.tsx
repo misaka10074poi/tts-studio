@@ -274,7 +274,7 @@ const ProjectDrawer: React.FC<ProjectDrawerProps> = ({ open, onClose }) => {
                               <Box
                                 key={seg.id}
                                 sx={{
-                                  border: '1px solid #e5e7eb',
+                                  border: '1px solid #e8eaf0',
                                   borderRadius: 1,
                                   p: 1,
                                   backgroundColor: '#fafafa',

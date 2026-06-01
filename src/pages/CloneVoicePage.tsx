@@ -26,7 +26,7 @@ const CloneVoicePage: React.FC = () => {
 
   return (
     <Box className="max-w-7xl mx-auto">
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: '#1a1a2e' }}>
+      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: 'text.primary' }}>
         🧬 声音克隆工作台
       </Typography>
 

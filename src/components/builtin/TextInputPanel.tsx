@@ -93,7 +93,7 @@ const TextInputPanel: React.FC<{ mode?: 'builtin' | 'clone' }> = ({ mode = 'buil
   return (
     <Box className="flex flex-col gap-3">
       <Box className="flex items-center justify-between">
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#111827' }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
           文本输入
         </Typography>
         <Button
@@ -135,7 +135,7 @@ const TextInputPanel: React.FC<{ mode?: 'builtin' | 'clone' }> = ({ mode = 'buil
             px: 1.5,
             borderRadius: 1,
             backgroundColor: '#f3f4f6',
-            '&:hover': { backgroundColor: '#e5e7eb' },
+            '&:hover': { backgroundColor: '#e8eaf0' },
           }}
         >
           <Typography variant="body2" color="text.secondary">

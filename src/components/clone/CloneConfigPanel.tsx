@@ -15,7 +15,7 @@ const CloneConfigPanel: React.FC = () => {
   const { config } = useCloneVoiceStore();
 
   return (
-    <Box sx={{ p: 1.5, borderRadius: 2, backgroundColor: '#f8fafc', border: '1px solid #e5e7eb' }}>
+    <Box sx={{ p: 1.5, borderRadius: 2, backgroundColor: '#f8fafc', border: '1px solid #e8eaf0' }}>
       <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>
         {config.method === CloneMethod.UPLOAD ? '音频上传' : '音色描述'}
       </Typography>

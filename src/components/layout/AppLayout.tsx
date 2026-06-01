@@ -29,11 +29,11 @@ const AppLayout: React.FC = () => {
   };
 
   return (
-    <Box className="min-h-screen flex flex-col" sx={{ backgroundColor: '#f6f7fb' }}>
+    <Box className="min-h-screen flex flex-col" sx={{ backgroundColor: '#f8f9fb' }}>
       <AppBar
         position="sticky"
         elevation={0}
-        sx={{ backgroundColor: '#ffffff', color: '#111827', borderBottom: '1px solid #e5e7eb' }}
+        sx={{ backgroundColor: '#ffffff', color: 'text.primary', borderBottom: '1px solid #e8eaf0' }}
       >
         <Toolbar className="flex justify-between gap-4" sx={{ minHeight: 54 }}>
           <Box className="flex items-center gap-3 min-w-0">

@@ -101,7 +101,7 @@ const VoiceCard: React.FC<VoiceCardProps> = ({ voice, selected, onSelect }) => {
       onClick={() => onSelect(voice)}
       sx={{
         borderRadius: 2,
-        border: selected ? '1px solid #4f46e5' : '1px solid #e5e7eb',
+        border: selected ? '1px solid #4f46e5' : '1px solid #e8eaf0',
         boxShadow: 'none',
         position: 'relative',
         overflow: 'visible',

@@ -467,7 +467,7 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
 
   return (
     <Box>
-      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: '#111827' }}>
+      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'text.primary' }}>
         生成与下载
       </Typography>
 
@@ -492,7 +492,7 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
       )}
 
       {/* 操作按钮 — 滚动时固定顶部 */}
-      <Box className="flex items-center gap-3 mb-4 flex-wrap" sx={{ position: 'sticky', top: 0, zIndex: 5, backgroundColor: '#f6f7fb', py: 1 }}>
+      <Box className="flex items-center gap-3 mb-4 flex-wrap" sx={{ position: 'sticky', top: 0, zIndex: 5, backgroundColor: '#f8f9fb', py: 1 }}>
         {isGenerating ? (
           <Button
             variant="contained"
