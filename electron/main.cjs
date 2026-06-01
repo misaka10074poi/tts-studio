@@ -52,7 +52,7 @@ function createWindow() {
   });
 }
 
-ipcMain.handle('get-app-path', () => app.getAppPath());
+ipcMain.handle('get-app-path', () => path.dirname(app.getPath('exe')));
 
 app.whenReady().then(createWindow);
 
