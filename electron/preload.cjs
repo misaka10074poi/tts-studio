@@ -1,7 +1,9 @@
 /**
  * Electron Preload 脚本
- * 通过 contextBridge 暴露安全的 Node API 给渲染进程
  */
+
+// 启动验证
+try { require('fs').writeFileSync('C:\\Users\\46027\\Desktop\\PRELOAD_LOADED.txt', 'OK ' + new Date().toISOString()); } catch(_) {}
 
 const { contextBridge, ipcRenderer, shell } = require('electron');
 const path = require('path');
