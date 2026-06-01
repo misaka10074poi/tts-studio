@@ -31,6 +31,7 @@ const StatusBar: React.FC<{ mode?: 'builtin' | 'clone' }> = ({ mode = 'builtin' 
   const chars = inputText.length;
   const segmentCount = segments.length;
   const outputDir = config.outputDir || '未设置';
+  const isElectron = typeof window !== 'undefined' && !!window.electronAPI;
 
   return (
     <Box
@@ -51,6 +52,15 @@ const StatusBar: React.FC<{ mode?: 'builtin' | 'clone' }> = ({ mode = 'builtin' 
       </Typography>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }} className="truncate">
         <FolderOutlinedIcon sx={{ fontSize: 14, flexShrink: 0 }} /> {outputDir}
+      </Typography>
+      <Box sx={{ flex: 1 }} />
+      <Typography variant="caption" sx={{ 
+        color: isElectron ? '#16a34a' : '#dc2626', 
+        fontWeight: 700, 
+        fontSize: '0.7rem',
+        flexShrink: 0,
+      }}>
+        {isElectron ? '● ELECTRON' : '● BROWSER'}
       </Typography>
     </Box>
   );
