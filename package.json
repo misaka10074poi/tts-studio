@@ -31,7 +31,7 @@
     "@types/uuid": "^9.0.8",
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.19",
-    "electron": "^42.3.0",
+    "electron": "^33.4.11",
     "electron-builder": "^26.8.1",
     "playwright": "^1.60.0",
     "postcss": "^8.4.38",
@@ -43,7 +43,7 @@
     "appId": "com.tts-studio.app",
     "productName": "配音工作室",
     "directories": {
-      "output": "release"
+      "output": "../tts-studio-build"
     },
     "win": {
       "target": "portable",
