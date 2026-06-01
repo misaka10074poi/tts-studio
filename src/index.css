@@ -2,72 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-bg: #f8f9fb;
+  --color-surface: #ffffff;
+  --color-border: #e8eaf0;
+  --color-border-hover: #d1d5db;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+  --color-accent: #6366f1;
+  --color-accent-light: #eef2ff;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+}
+
 body {
   margin: 0;
   padding: 0;
-  background-color: #f6f7fb;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.workstation-grid {
-  display: grid;
-  grid-template-columns: minmax(260px, 0.9fr) minmax(420px, 1.55fr) minmax(300px, 1fr);
-  gap: 12px;
-  align-items: start;
+/* Cards */
+.MuiCard-root {
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
-
-.workstation-panel {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
-  background: #fff;
-  min-width: 0;
+.MuiCard-root:hover {
+  border-color: var(--color-border-hover);
 }
-
-.workstation-main {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-@media (max-width: 1180px) {
-  .workstation-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.15);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.25);
-}
-
-/* 选中的音色卡片边框动画 */
+.MuiCard-root.Mui-selected,
 .voice-card-selected {
-  box-shadow: inset 3px 0 0 #4f46e5;
-  transition: box-shadow 0.2s ease;
+  border-color: var(--color-accent) !important;
+  background-color: var(--color-accent-light) !important;
 }
 
-/* 任务状态图标动画 */
+/* Buttons */
+.MuiButton-containedPrimary {
+  box-shadow: none !important;
+}
+.MuiButton-containedPrimary:hover {
+  box-shadow: 0 1px 3px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Sliders */
+.MuiSlider-thumb:hover,
+.MuiSlider-thumb.Mui-focusVisible {
+  box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.12) !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background-color: rgba(0, 0, 0, 0.22); }
+
+/* Animations */
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+.status-spinning { animation: spin 1s linear infinite; }
 
-.status-spinning {
-  animation: spin 1s linear infinite;
+/* Panel cards */
+.panel-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 16px;
 }
