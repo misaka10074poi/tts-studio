@@ -34,6 +34,13 @@ interface WriteFileResult {
   size?: number;
 }
 
+/** 打开系统路径结果 */
+interface OpenPathResult {
+  success: boolean;
+  path?: string;
+  error?: string;
+}
+
 /** 诊断信息 */
 interface DiagInfo {
   portableExecutableFile: string;
@@ -51,7 +58,7 @@ interface DiagInfo {
 /** Electron API 桥接接口 */
 interface ElectronAPI {
   /** 用系统资源管理器打开文件夹 */
-  openPath: (dirPath: string) => void;
+  openPath: (dirPath: string) => Promise<OpenPathResult>;
   /** 获取应用根目录（异步 IPC） */
   getAppPath: () => Promise<string>;
   /** 获取诊断信息（异步 IPC） */
@@ -59,7 +66,7 @@ interface ElectronAPI {
   /** 确保输出根目录存在（异步 IPC） */
   ensureOutputDir: () => Promise<{ success: boolean; path?: string; error?: string }>;
   /** 将 ArrayBuffer/Uint8Array 写入文件 */
-  writeFile: (filePath: string, data: ArrayBuffer | Uint8Array) => WriteFileResult;
+  writeFile: (filePath: string, data: ArrayBuffer | Uint8Array) => Promise<WriteFileResult>;
   /** 检查目录是否存在，不存在则创建 */
   ensureDir: (dirPath: string) => Promise<{ success: boolean; path?: string; error?: string }>;
   /** 将 Base64 音频写入文件 */

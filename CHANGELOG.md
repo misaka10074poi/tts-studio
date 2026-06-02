@@ -4,6 +4,23 @@ All notable changes to TTS Studio are documented in this file.
 
 ---
 
+## [v4.3.0] — 2026-06-02
+
+### Fixed
+- **Electron packaged file output**: restored automatic saving in the exe by moving filesystem work from preload into main-process IPC
+- **Preload bridge crash**: removed sandbox-incompatible `fs`/`path` usage from `preload.cjs`, so `window.electronAPI` is exposed again
+- **Open output directory**: routed `openPath` through main-process IPC and verified it can open the generated output folder
+- **Browser mode fallback**: browser generation now only triggers downloads instead of attempting Electron-only local saves
+
+### Changed
+- Restored release packaging to `portable` with `asar: true`
+- Added complete Electron bridge methods for directory creation, file writes, base64 writes, path checks, directory listing, diagnostics, and opening paths
+
+### Verified
+- TypeScript check, production build, Electron build, packaged Electron bridge check, real TTS save smoke test, and output-directory open check
+
+---
+
 ## [v4.2.0] — 2026-06-02
 
 ### Changed

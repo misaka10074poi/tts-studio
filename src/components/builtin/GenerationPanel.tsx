@@ -27,6 +27,7 @@ import DownloadButton from '../common/DownloadButton';
 import { splitText } from '../../services/textSplitter';
 import { mergeAndEncodeMp3, mergeAndEncodeWav } from '../../services/audioProcessor';
 import * as outputService from '../../services/outputService';
+import { downloadBase64, getAudioMimeType } from '../../services/fileHelper';
 import {
   CloneMethod,
   TaskStatus,
@@ -265,6 +266,9 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
     console.log('[GenerationPanel] startPendingGeneration: segs count =', params.segs.length);
     console.log('[GenerationPanel] startPendingGeneration: format =', params.format);
 
+    failedSaveSegIndices.current = new Set();
+    downloadQueueRef.current = [];
+
     startGeneration({
       model: params.model,
       segments: params.segs,
@@ -277,55 +281,59 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
         if (!isElectron && audioBase64) {
           downloadQueueRef.current.push({ index, base64: audioBase64, text: params.segs[index]?.text || `段${index + 1}` });
         }
-        outputService.saveSegment(params.taskDir, index, audioBase64, params.format).then(() => {
-          console.log('[GenerationPanel] onEachComplete: segment', index, 'saved OK');
-        }).catch((err) => {
-          console.error('[GenerationPanel] onEachComplete: segment', index, 'save FAILED:', err.message || err);
-          failedSaveSegIndices.current.add(index);
-        });
+        if (isElectron) {
+          outputService.saveSegment(params.taskDir, index, audioBase64, params.format).then(() => {
+            console.log('[GenerationPanel] onEachComplete: segment', index, 'saved OK');
+          }).catch((err) => {
+            console.error('[GenerationPanel] onEachComplete: segment', index, 'save FAILED:', err.message || err);
+            failedSaveSegIndices.current.add(index);
+          });
+        }
       },
       onAllComplete: async (doneCount: number) => {
         console.log('[GenerationPanel] ====== onAllComplete ======');
         console.log('[GenerationPanel] onAllComplete: doneCount =', doneCount, 'total =', params.segs.length);
         console.log('[GenerationPanel] onAllComplete: failedSaveSegIndices =', Array.from(failedSaveSegIndices.current));
 
-        try {
-          await saveCompletedOutput(
-            params.taskDir,
-            params.segs,
-            params.format,
-            params.voiceName,
-            params.voiceId
-          );
+        if (isElectron) {
+          try {
+            await saveCompletedOutput(
+              params.taskDir,
+              params.segs,
+              params.format,
+              params.voiceName,
+              params.voiceId
+            );
 
-          const failedSaveCount = failedSaveSegIndices.current.size;
-          console.log('[GenerationPanel] onAllComplete: failedSaveCount =', failedSaveCount);
+            const failedSaveCount = failedSaveSegIndices.current.size;
+            console.log('[GenerationPanel] onAllComplete: failedSaveCount =', failedSaveCount);
 
-          if (failedSaveCount > 0) {
-            const indices = Array.from(failedSaveSegIndices.current)
-              .sort((a, b) => a - b)
-              .slice(0, 5);
-            const suffix = failedSaveCount > 5 ? '...' : '';
+            if (failedSaveCount > 0) {
+              const indices = Array.from(failedSaveSegIndices.current)
+                .sort((a, b) => a - b)
+                .slice(0, 5);
+              const suffix = failedSaveCount > 5 ? '...' : '';
+              setSnackbar({
+                open: true,
+                message: `已生成 ${doneCount}/${params.segs.length} 段，但 ${failedSaveCount} 个分段保存失败 (${indices.map((i) => i + 1).join(', ')}${suffix})`,
+                severity: 'warning',
+              });
+            } else {
+              setSnackbar({
+                open: true,
+                message: `已生成 ${doneCount}/${params.segs.length} 段，保存至本地`,
+                severity: 'success',
+              });
+            }
+          } catch (err) {
+            console.error('[GenerationPanel] onAllComplete: saveCompletedOutput FAILED:', err);
+            const errorMsg = err instanceof Error ? err.message : String(err);
             setSnackbar({
               open: true,
-              message: `已生成 ${doneCount}/${params.segs.length} 段，但 ${failedSaveCount} 个分段保存失败 (${indices.map((i) => i + 1).join(', ')}${suffix})`,
-              severity: 'warning',
-            });
-          } else {
-            setSnackbar({
-              open: true,
-              message: `已生成 ${doneCount}/${params.segs.length} 段，保存至本地`,
-              severity: 'success',
+              message: `保存输出文件失败: ${errorMsg}`,
+              severity: 'error',
             });
           }
-        } catch (err) {
-          console.error('[GenerationPanel] onAllComplete: saveCompletedOutput FAILED:', err);
-          const errorMsg = err instanceof Error ? err.message : String(err);
-          setSnackbar({
-            open: true,
-            message: `保存输出文件失败: ${errorMsg}`,
-            severity: 'error',
-          });
         }
 
         // 浏览器模式：自动触发下载（纯浏览器 blob 下载，不依赖 Electron）
@@ -333,7 +341,6 @@ const GenerationPanel: React.FC<GenerationPanelProps> = ({
           const queue = downloadQueueRef.current.sort((a, b) => a.index - b.index);
           downloadQueueRef.current = [];
           setTimeout(() => {
-            const { downloadBase64, getAudioMimeType } = require('../../services/fileHelper');
             const mime = getAudioMimeType(params.format);
             if (queue.length === 1) {
               downloadBase64(queue[0].base64, `${queue[0].text.substring(0, 20)}.${params.format}`, mime);

@@ -234,7 +234,7 @@ python E:\tts_studio\scripts\tts_batch.py input.txt output.mp3
 | 配置 | 默认值 | 位置 | 说明 |
 |------|--------|------|------|
 | API 端点 | `https://token-plan-cn.xiaomimimo.com/v1/chat/completions` | `constants.ts` | 可界面修改 |
-| API Key | `tp-czn5er05pbeklfjahhhddpswadv3sku669ypzoyg3zdg5gp0` | `constants.ts` | 可界面修改 |
+| API Key | 空字符串（需用户配置） | `constants.ts` | 可界面修改，禁止提交明文密钥 |
 | 最大并发 | 2 | `constants.ts` | 可界面修改（1-5） |
 | 拆分阈值 | 1000 字/段 | `constants.ts` | — |
 | 文本上限 | 100,000 字 | `constants.ts` | — |

@@ -1,7 +1,7 @@
 /**
  * 输出目录管理服务
  * 操作本地文件系统通过 window.electronAPI 桥接
- * 所有文件操作在非 Electron 环境下自动降级为 no-op（带警告）
+ * 非 Electron 环境下不执行本地文件系统操作
  */
 
 import { AudioFormat, OutputTaskMeta, HistoryIndexEntry, HistoryIndex } from '../types';
@@ -335,10 +335,10 @@ export async function openOutputDir(taskDir?: string): Promise<void> {
     const parentDir = target.substring(0, target.lastIndexOf('/'));
     if (parentDir) {
       console.log('[outputService] openOutputDir: trying parent dir:', parentDir);
-      window.electronAPI!.openPath(parentDir);
+      await window.electronAPI!.openPath(parentDir);
       return;
     }
   }
 
-  window.electronAPI!.openPath(target);
+  await window.electronAPI!.openPath(target);
 }
